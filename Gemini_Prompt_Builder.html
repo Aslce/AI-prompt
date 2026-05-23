@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini 提示词构建器与官方指南</title>
+    <style>
+        :root {
+            --bg-color: #f5f5f7;
+            --card-bg: #ffffff;
+            --text-main: #1d1d1f;
+            --text-muted: #86868b;
+            --link-color: #0066cc;
+            --button-bg: #0071e3;
+            --button-hover: #0077ed;
+            --border-color: #d2d2d7;
+            --focus-ring: rgba(0, 113, 227, 0.3);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.47059;
+            letter-spacing: -0.022em;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 顶部导航栏模拟 */
+        .global-nav {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: saturate(180%) blur(20px);
+            height: 44px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #333;
+        }
+
+        /* 英雄区域 */
+        .hero {
+            text-align: center;
+            padding: 80px 20px 40px;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            line-height: 1.08349;
+            font-weight: 600;
+            letter-spacing: -0.003em;
+            margin: 0 0 10px;
+        }
+
+        .hero p {
+            font-size: 24px;
+            line-height: 1.16667;
+            font-weight: 400;
+            letter-spacing: .009em;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        /* 布局容器 */
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 0 20px 60px;
+        }
+
+        /* 卡片样式 */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 18px;
+            padding: 40px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02), 0 1px 3px rgba(0,0,0,0.04);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card h2 {
+            font-size: 28px;
+            line-height: 1.14286;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 24px;
+        }
+
+        .card h3 {
+            font-size: 19px;
+            line-height: 1.21053;
+            font-weight: 600;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+
+        /* 交互表单区 */
+        .interactive-builder {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .interactive-builder {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 17px;
+            font-family: inherit;
+            background-color: #fff;
+            color: var(--text-main);
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+        
+        select.form-control {
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 1.5L6 6L10.5 1.5" stroke="%2386868b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 4px var(--focus-ring);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* 按钮 */
+        .btn-primary {
+            background-color: var(--button-bg);
+            color: #fff;
+            border: none;
+            padding: 14px 28px;
+            font-size: 17px;
+            font-weight: 400;
+            border-radius: 980px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--button-hover);
+        }
+
+        /* 结果展示区 */
+        .result-area {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        #prompt-result {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            min-height: 150px;
+            white-space: pre-wrap;
+            color: var(--text-main);
+        }
+
+        /* 组合网格 */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 列表样式 */
+        ul {
+            padding-left: 20px;
+            color: var(--text-muted);
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        li strong {
+            color: var(--text-main);
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            text-align: left;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 15px;
+        }
+        th {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        td {
+            color: var(--text-muted);
+        }
+        td strong {
+            color: var(--text-main);
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: #e8e8ed;
+            font-size: 12px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="global-nav">
+        Gemini Prompt Engineer Tools
+    </div>
+
+    <div class="hero">
+        <h1>构建你的专属提示词</h1>
+        <p>基于官方最佳实践，自定义组合生成高质量 Prompt</p>
+    </div>
+
+    <div class="container">
+        
+        <!-- 交互式 Prompt 生成器 -->
+        <div class="card">
+            <h2>交互式 Prompt 生成器</h2>
+            <div class="interactive-builder">
+                <!-- 第一列 -->
+                <div>
+                    <div class="form-group">
+                        <label for="role-select">1. Persona / 角色与专家身份</label>
+                        <select id="role-select" class="form-control" onchange="toggleCustom('role')">
+                            <option value="拥有10年经验的高级前端架构师">高级前端架构师</option>
+                            <option value="专业的数据分析师和商业顾问">数据分析师</option>
+                            <option value="擅长引人入胜的资深文案策划">资深文案策划</option>
+                            <option value="严谨的科学研究员">科学研究员</option>
+                            <option value="custom">自定义输入...</option>
+                        </select>
+                        <input type="text" id="role-custom" class="form-control" style="display: none; margin-top: 10px;" placeholder="例如：资深法律顾问">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="task-select">2. Task / 核心任务</label>
+                        <select id="task-select" class="form-control" onchange="toggleCustom('task')">
+                            <option value="审查并重构以下代码，以提升性能和可读性">代码审查与重构</option>
+                            <option value="提取以下文本中的关键数据，并生成总结报告">数据提取与总结</option>
+                            <option value="针对目标受众撰写一篇具有吸引力的营销推文">撰写营销推文</option>
+                            <option value="一步一步分析该问题，并给出最终解决方案">分布逻辑推理解答</option>
+                            <option value="custom">自定义输入...</option>
+                        </select>
+                        <input type="text" id="task-custom" class="form-control" style="display: none; margin-top: 10px;" placeholder="例如：翻译并润色以下文章">
+                    </div>
+                </div>
+
+                <!-- 第二列 -->
+                <div>
+                    <div class="form-group">
+                        <label for="format-select">3. Format / 格式与限制</label>
+                        <select id="format-select" class="form-control" onchange="toggleCustom('format')">
+                            <option value="仅输出完整的 Markdown 格式，并用粗体列表说明核心改动，字数控制在 500 字以内">Markdown + 列表 + 字数限制</option>
+                            <option value="请以标准的 JSON 格式输出，包含相应的键值对，无需任何废话">纯 JSON 格式输出</option>
+                            <option value="请使用通俗易懂的语气，分段落说明，并附上 1-2 个具体例子">通俗分段说明 + 例子</option>
+                            <option value="custom">自定义输入...</option>
+                        </select>
+                        <input type="text" id="format-custom" class="form-control" style="display: none; margin-top: 10px;" placeholder="例如：输出为 HTML 表格">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="context-input">4. Context / 背景与具体上下文</label>
+                        <textarea id="context-input" class="form-control" placeholder="在此输入你需要处理的具体内容、业务背景、数据来源等（支持长文本）..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="btn-primary" onclick="generatePrompt()">生成专属 Prompt</button>
+            </div>
+
+            <div class="result-area">
+                <label style="font-weight: 600; margin-bottom: 10px; display: block;">最终生成的 Prompt（可直接复制使用）：</label>
+                <div id="prompt-result" contenteditable="true">
+// 点击上方按钮生成 Prompt...
+                </div>
+            </div>
+        </div>
+
+        <!-- 指南内容展示区 -->
+        <h2 style="font-size: 32px; font-weight: 600; text-align: center; margin: 60px 0 30px;">Gemini 官方提示词规范</h2>
+
+        <div class="grid-2">
+            <!-- PTCF 框架 -->
+            <div class="card" style="margin-bottom: 0;">
+                <span class="tag">核心结构</span>
+                <h2>黄金四要素 (PTCF)</h2>
+                <p>一个能激发 Gemini 潜能的完美 Prompt，应包含以下四个组件：</p>
+                <ul>
+                    <li><strong>Persona (角色)：</strong> 赋予明确的职业背景或视角。</li>
+                    <li><strong>Task (任务)：</strong> 动词开头，清晰、无歧义地说明具体动作。</li>
+                    <li><strong>Context (上下文)：</strong> 提供业务背景、数据来源或目标受众，减少幻觉。</li>
+                    <li><strong>Format (格式与限制)：</strong> 严格规定输出的视觉结构、字数、语气或边界。</li>
+                </ul>
+            </div>
+
+            <!-- 设计原则 -->
+            <div class="card" style="margin-bottom: 0;">
+                <span class="tag">设计心法</span>
+                <h2>5 大设计原则</h2>
+                <ul>
+                    <li><strong>引导指令代替单纯禁止：</strong> 告诉模型“做什么”，比“不要做什么”更高效。</li>
+                    <li><strong>大道至简：</strong> 避免层层嵌套的伪代码模板，直白的指令表现最稳定。</li>
+                    <li><strong>使用明确的分隔符：</strong> 用 `---` 或 `"""` 将“指令”与“输入数据”隔离。</li>
+                    <li><strong>范例依然是王道：</strong> 提供 1-2 个“输入-输出”范例（Few-Shot）。</li>
+                    <li><strong>控制 Token 与变量管理：</strong> 使用变量占位符，并明确限制生成长度。</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 24px;">
+            <span class="tag">多模态与推理</span>
+            <h2>高级技巧</h2>
+            <div class="grid-2" style="gap: 40px;">
+                <div>
+                    <h3>多模态 Prompt (Multimodal)</h3>
+                    <p style="color: var(--text-muted); font-size: 15px;">在文本中建立“空间或时间锚点”。</p>
+                    <ul>
+                        <li><strong>图片：</strong>“分析左上角红圈标注的元件...”</li>
+                        <li><strong>视频：</strong>“基于 01:23 至 01:50 处演示的动作...”</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>思维链引导 (Chain-of-Thought)</h3>
+                    <p style="color: var(--text-muted); font-size: 15px;">处理复杂推理时，显式引导模型进行分布式思考。</p>
+                    <p style="background: #f5f5f7; padding: 12px; border-radius: 8px; font-size: 14px; font-family: monospace;">
+                        "请一步一步思考，并在给出最终答案前，先列出你的中间推导或分析步骤。"
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <span class="tag">参数调优</span>
+            <h2>底层参数协同建议</h2>
+            <p style="color: var(--text-muted);">参数设定需与 Prompt 的目的保持一致，避免相互冲突。</p>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>参数名称</th>
+                            <th>确定性任务 (代码/数学/提取)</th>
+                            <th>创意性任务 (文案/头脑风暴)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Temperature (温度)</strong></td>
+                            <td><strong>调低 (0.0 ~ 0.2)</strong><br>确保结果完全基于事实，高度确定。</td>
+                            <td><strong>调高 (0.7 ~ 1.0)</strong><br>鼓励探索低概率词汇，增加多样性。</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Top-K</strong></td>
+                            <td><strong>调小 (1 ~ 10)</strong><br>贪婪解码，输出最稳妥的词。</td>
+                            <td><strong>调大 (30 ~ 40+)</strong><br>释放备选词池，行文更具灵活性。</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Top-P</strong></td>
+                            <td><strong>保持默认 (0.95)</strong><br>过滤绝对不可能的无意义词。</td>
+                            <td><strong>适当调高 (0.99)</strong><br>允许有创意但概率略低的连词出现。</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 切换自定义输入框
+        function toggleCustom(field) {
+            const select = document.getElementById(field + '-select');
+            const customInput = document.getElementById(field + '-custom');
+            if (select.value === 'custom') {
+                customInput.style.display = 'block';
+                customInput.focus();
+            } else {
+                customInput.style.display = 'none';
+            }
+        }
+
+        // 生成 Prompt 逻辑
+        function generatePrompt() {
+            // 获取 Persona
+            let role = document.getElementById('role-select').value;
+            if (role === 'custom') role = document.getElementById('role-custom').value || '专业的 AI 助手';
+
+            // 获取 Task
+            let task = document.getElementById('task-select').value;
+            if (task === 'custom') task = document.getElementById('task-custom').value || '回答以下问题';
+
+            // 获取 Format
+            let format = document.getElementById('format-select').value;
+            if (format === 'custom') format = document.getElementById('format-custom').value || '以清晰易读的方式输出';
+
+            // 获取 Context
+            let context = document.getElementById('context-input').value.trim();
+            if (!context) {
+                context = "[请在此处提供必要的数据、文本或上下文信息]";
+            }
+
+            // 组装 PTCF 模板
+            const finalPrompt = `你是${role}。
+
+请执行以下任务：
+${task}
+
+背景信息与具体要求如下：
+---
+${context}
+---
+
+输出格式要求：
+${format}`;
+
+            // 显示结果
+            const resultBox = document.getElementById('prompt-result');
+            resultBox.innerText = finalPrompt;
+            
+            // 添加生成动画效果
+            resultBox.style.opacity = 0;
+            setTimeout(() => {
+                resultBox.style.transition = 'opacity 0.5s';
+                resultBox.style.opacity = 1;
+            }, 50);
+        }
+    </script>
+</body>
+</html>

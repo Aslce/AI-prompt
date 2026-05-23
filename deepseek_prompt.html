@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepSeek Prompt 规范 · 可交互指南</title>
+    <style>
+        /* ===== Apple 风格全局变量 ===== */
+        :root {
+            --font-display: "SF Pro Display", "PingFang SC", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+            --font-body: "SF Pro Text", "PingFang SC", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+            --color-canvas: #ffffff;
+            --color-canvas-parchment: #f5f5f7;
+            --color-surface-dark: #1d1d1f;
+            --color-primary: #0066cc;
+            --color-primary-on-dark: #2997ff;
+            --color-ink: #1d1d1f;
+            --color-ink-muted: #86868b;
+            --color-ink-muted-48: #7a7a7a;
+            --color-body-on-dark: #f5f5f7;
+            --color-divider: #d2d2d7;
+            --color-border-light: rgba(0, 0, 0, 0.08);
+            --color-highlight-bg: #f5f5f7;
+            --shadow-product: rgba(0, 0, 0, 0.22) 3px 5px 30px 0;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --radius-pill: 9999px;
+            --spacing-xs: 8px;
+            --spacing-sm: 12px;
+            --spacing-md: 17px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --spacing-xxl: 48px;
+            --spacing-section: 80px;
+            --max-width-content: 980px;
+            --transition-fast: 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+            --transition-smooth: 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
+            interpolate-size: allow-keywords;
+        }
+
+        /* ===== 全局重置 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        body {
+            font-family: var(--font-body);
+            color: var(--color-ink);
+            background-color: var(--color-canvas);
+            line-height: 1.47;
+            font-size: 17px;
+            letter-spacing: -0.022em;
+            min-height: 100vh;
+        }
+
+        /* ===== 顶部导航栏（Apple 风格纯黑） ===== */
+        .global-nav {
+            background: var(--color-surface-dark);
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 var(--spacing-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .global-nav-inner {
+            max-width: var(--max-width-content);
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--spacing-lg);
+        }
+        .global-nav-logo {
+            font-family: var(--font-display);
+            font-size: 21px;
+            font-weight: 600;
+            color: var(--color-body-on-dark);
+            letter-spacing: -0.011em;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .global-nav-logo .icon {
+            width: 20px;
+            height: 20px;
+            background: var(--color-body-on-dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: var(--color-surface-dark);
+            font-weight: 700;
+        }
+        .global-nav-title {
+            font-size: 14px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.8);
+            letter-spacing: -0.016em;
+        }
+
+        /* ===== 主内容区域 ===== */
+        .main-content {
+            max-width: var(--max-width-content);
+            margin: 0 auto;
+            padding: var(--spacing-xxl) var(--spacing-lg) var(--spacing-section);
+        }
+
+        /* ===== 页面标题区域 ===== */
+        .page-hero {
+            text-align: center;
+            padding: var(--spacing-xl) 0 var(--spacing-xxl);
+        }
+        .page-hero h1 {
+            font-family: var(--font-display);
+            font-size: 48px;
+            font-weight: 600;
+            letter-spacing: -0.006em;
+            line-height: 1.08;
+            color: var(--color-ink);
+            margin-bottom: var(--spacing-sm);
+        }
+        .page-hero .subtitle {
+            font-size: 21px;
+            font-weight: 400;
+            color: var(--color-ink-muted);
+            letter-spacing: 0.011em;
+            line-height: 1.38;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* ===== 快速导航标签 ===== */
+        .quick-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-xs);
+            justify-content: center;
+            margin-bottom: var(--spacing-xxl);
+            padding-bottom: var(--spacing-xl);
+            border-bottom: 1px solid var(--color-divider);
+        }
+        .quick-nav-btn {
+            font-family: var(--font-body);
+            font-size: 14px;
+            font-weight: 400;
+            letter-spacing: -0.016em;
+            color: var(--color-primary);
+            background: transparent;
+            border: 1px solid var(--color-primary);
+            border-radius: var(--radius-pill);
+            padding: 8px 18px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-decoration: none;
+            display: inline-block;
+            white-space: nowrap;
+        }
+        .quick-nav-btn:hover {
+            background: var(--color-primary);
+            color: #ffffff;
+        }
+        .quick-nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ===== 折叠面板（Accordion） ===== */
+        .accordion-section {
+            margin-bottom: var(--spacing-sm);
+        }
+        .accordion-section:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 使用 details/summary 实现纯 HTML 手风琴 */
+        .accordion-group {
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            background: var(--color-canvas);
+            border: 1px solid var(--color-border-light);
+            margin-bottom: var(--spacing-xs);
+            transition: box-shadow var(--transition-smooth);
+        }
+        .accordion-group:hover {
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+        }
+
+        .accordion-group>summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-md) var(--spacing-lg);
+            cursor: pointer;
+            list-style: none;
+            font-family: var(--font-display);
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -0.022em;
+            color: var(--color-ink);
+            background: var(--color-canvas);
+            transition: background var(--transition-fast);
+            user-select: none;
+            -webkit-user-select: none;
+            gap: var(--spacing-sm);
+            outline: none;
+        }
+        .accordion-group>summary::-webkit-details-marker {
+            display: none;
+        }
+        .accordion-group>summary::marker {
+            display: none;
+            content: "";
+        }
+        .accordion-group>summary:hover {
+            background: var(--color-canvas-parchment);
+        }
+        .accordion-group>summary:focus-visible {
+            outline: 2px solid #0071e3;
+            outline-offset: -2px;
+            border-radius: var(--radius-lg);
+        }
+
+        /* 折叠图标 */
+        .accordion-icon {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform var(--transition-smooth);
+            color: var(--color-ink-muted);
+        }
+        .accordion-icon svg {
+            width: 14px;
+            height: 14px;
+        }
+        .accordion-group[open]>summary .accordion-icon {
+            transform: rotate(45deg);
+        }
+
+        /* 展开内容 */
+        .accordion-content {
+            padding: 0 var(--spacing-lg) var(--spacing-lg);
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--color-ink);
+            letter-spacing: -0.012em;
+            animation: accordionFadeIn 0.35s ease-out;
+        }
+        @keyframes accordionFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== 内容样式 ===== */
+        .accordion-content h3 {
+            font-family: var(--font-display);
+            font-size: 19px;
+            font-weight: 600;
+            letter-spacing: -0.018em;
+            margin: var(--spacing-lg) 0 var(--spacing-xs);
+            color: var(--color-ink);
+        }
+        .accordion-content h3:first-child {
+            margin-top: var(--spacing-sm);
+        }
+        .accordion-content p {
+            margin-bottom: var(--spacing-sm);
+            color: var(--color-ink);
+        }
+        .accordion-content ul,
+        .accordion-content ol {
+            margin: var(--spacing-xs) 0 var(--spacing-md) var(--spacing-lg);
+            padding: 0;
+        }
+        .accordion-content li {
+            margin-bottom: 6px;
+            padding-left: 4px;
+        }
+        .accordion-content li strong {
+            font-weight: 600;
+            color: var(--color-ink);
+        }
+        .accordion-content code {
+            font-family: "SF Mono", "Menlo", "Monaco", "Consolas", monospace;
+            font-size: 13px;
+            background: var(--color-canvas-parchment);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: var(--color-primary);
+            white-space: nowrap;
+        }
+        .accordion-content pre {
+            background: var(--color-canvas-parchment);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            overflow-x: auto;
+            margin: var(--spacing-sm) 0 var(--spacing-md);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .accordion-content pre code {
+            background: none;
+            padding: 0;
+            color: var(--color-ink);
+            white-space: pre;
+        }
+        .badge {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 3px 10px;
+            border-radius: var(--radius-pill);
+            background: var(--color-canvas-parchment);
+            color: var(--color-ink-muted);
+            margin-left: 8px;
+            letter-spacing: 0;
+            vertical-align: middle;
+        }
+        .badge.primary {
+            background: var(--color-primary);
+            color: #fff;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: var(--spacing-sm) 0 var(--spacing-md);
+            font-size: 14px;
+        }
+        table th,
+        table td {
+            text-align: left;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--color-divider);
+        }
+        table th {
+            font-weight: 600;
+            color: var(--color-ink);
+            font-size: 13px;
+            letter-spacing: 0;
+            background: var(--color-canvas-parchment);
+        }
+        table td {
+            color: var(--color-ink);
+        }
+
+        /* ===== 自定义输入区域 ===== */
+        .custom-section {
+            margin-top: var(--spacing-xxl);
+            padding: var(--spacing-xl);
+            background: var(--color-canvas-parchment);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border-light);
+        }
+        .custom-section h2 {
+            font-family: var(--font-display);
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: -0.013em;
+            margin-bottom: var(--spacing-xs);
+            color: var(--color-ink);
+        }
+        .custom-section .section-desc {
+            font-size: 15px;
+            color: var(--color-ink-muted);
+            margin-bottom: var(--spacing-lg);
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+        .input-group label {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: -0.016em;
+            color: var(--color-ink);
+            margin-bottom: 2px;
+            display: block;
+        }
+        .input-group input,
+        .input-group textarea,
+        .input-group select {
+            font-family: var(--font-body);
+            font-size: 15px;
+            padding: 12px 16px;
+            border: 1px solid var(--color-divider);
+            border-radius: var(--radius-md);
+            background: var(--color-canvas);
+            color: var(--color-ink);
+            width: 100%;
+            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+            outline: none;
+            resize: vertical;
+        }
+        .input-group input:focus,
+        .input-group textarea:focus,
+        .input-group select:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.12);
+        }
+        .input-group textarea {
+            min-height: 120px;
+            line-height: 1.5;
+        }
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-md);
+        }
+        @media (max-width: 640px) {
+            .input-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn-primary {
+            font-family: var(--font-body);
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: -0.016em;
+            background: var(--color-primary);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-pill);
+            padding: 12px 26px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        .btn-primary:hover {
+            background: #0077d6;
+        }
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+        .btn-secondary {
+            font-family: var(--font-body);
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: -0.016em;
+            background: transparent;
+            color: var(--color-primary);
+            border: 1px solid var(--color-primary);
+            border-radius: var(--radius-pill);
+            padding: 12px 26px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        .btn-secondary:hover {
+            background: var(--color-primary);
+            color: #ffffff;
+        }
+        .btn-secondary:active {
+            transform: scale(0.95);
+        }
+        .btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-md);
+        }
+
+        /* ===== 输出预览区 ===== */
+        .output-preview {
+            margin-top: var(--spacing-lg);
+            padding: var(--spacing-lg);
+            background: var(--color-canvas);
+            border: 1px solid var(--color-divider);
+            border-radius: var(--radius-lg);
+            min-height: 60px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--color-ink);
+            white-space: pre-wrap;
+            word-break: break-word;
+            display: none;
+        }
+        .output-preview.visible {
+            display: block;
+        }
+        .output-preview .copy-hint {
+            font-size: 12px;
+            color: var(--color-ink-muted);
+            margin-top: var(--spacing-sm);
+            text-align: right;
+        }
+
+        /* ===== 页脚 ===== */
+        .page-footer {
+            background: var(--color-canvas-parchment);
+            padding: var(--spacing-xl) var(--spacing-lg);
+            text-align: center;
+            font-size: 12px;
+            color: var(--color-ink-muted-48);
+            letter-spacing: -0.01em;
+            border-top: 1px solid var(--color-divider);
+        }
+        .page-footer p {
+            max-width: var(--max-width-content);
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 734px) {
+            .page-hero h1 {
+                font-size: 34px;
+            }
+            .page-hero .subtitle {
+                font-size: 17px;
+            }
+            .accordion-group>summary {
+                font-size: 15px;
+                padding: 14px var(--spacing-md);
+            }
+            .accordion-content {
+                padding: 0 var(--spacing-md) var(--spacing-md);
+                font-size: 14px;
+            }
+            .main-content {
+                padding: var(--spacing-lg) var(--spacing-sm) var(--spacing-xl);
+            }
+            .custom-section {
+                padding: var(--spacing-lg);
+            }
+            .global-nav {
+                height: 44px;
+            }
+        }
+        @media (max-width: 419px) {
+            .page-hero h1 {
+                font-size: 28px;
+            }
+            .quick-nav-btn {
+                font-size: 12px;
+                padding: 6px 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== 顶部导航栏 ===== -->
+    <nav class="global-nav" aria-label="顶部导航">
+        <div class="global-nav-inner">
+            <a href="#" class="global-nav-logo" aria-label="返回首页">
+                <span class="icon">D</span>
+                DeepSeek
+            </a>
+            <span class="global-nav-title">Prompt 规范指南</span>
+        </div>
+    </nav>
+
+    <!-- ===== 主内容区 ===== -->
+    <main class="main-content">
+
+        <!-- 页面标题 -->
+        <section class="page-hero">
+            <h1>DeepSeek Prompt 规范</h1>
+            <p class="subtitle">一套完整的结构化提示词指南，涵盖框架、技巧、参数与自检清单，帮助你充分发挥模型能力。</p>
+        </section>
+
+        <!-- 快速导航 -->
+        <nav class="quick-nav" aria-label="快速导航">
+            <button class="quick-nav-btn" onclick="expandAll()">全部展开</button>
+            <button class="quick-nav-btn" onclick="collapseAll()">全部折叠</button>
+            <button class="quick-nav-btn" onclick="document.querySelector('.custom-section').scrollIntoView({behavior:'smooth'})">跳转自定义区域</button>
+        </nav>
+
+        <!-- ===== 折叠面板区域 ===== -->
+        <div class="accordion-section">
+
+            <!-- 1. 基础原则与官方规范 -->
+            <details class="accordion-group" id="section-basics">
+                <summary aria-expanded="false" role="button">
+                    📜 基础原则与官方规范
+                    <span class="accordion-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </span>
+                </summary>
+                <div class="accordion-content">
+                    <h3>基础原则</h3>
+                    <ul>
+                        <li><strong>明确性</strong>：清晰定义任务目标、输入格式和输出规范，消除语义歧义。</li>
+                        <li><strong>结构性</strong>：将复杂任务拆解为清晰、有层次的步骤或模块。</li>
+                        <li><strong>可验证性</strong>：设定可量化评估的标准或明确格式，确保输出结果易于验证。</li>
+                    </ul>
+                    <h3>基础指令语法</h3>
+                    <p>采用 <code>动词 + 对象 + 约束条件</code> 结构，如 <em>"生成一段关于AI安全的白皮书，包含5个章节"</em>。</p>
+                    <h3>System Prompt 规范</h3>
+                    <ul>
+                        <li>必须通过 <code>system</code> 角色发送。</li>
+                        <li>仅定义角色与核心约束，<strong>禁止</strong>包含具体任务或数据。</li>
+                        <li>建议长度 <strong>80–150 字</strong>（过长可能失效）。</li>
+                    </ul>
+                    <h3>模型路由选择</h3>
+                    <ul>
+                        <li>简单对话选 <code>deepseek-v4-flash</code></li>
+                        <li>分析/复杂推理选 <code>deepseek-v4-pro</code></li>
+                    </ul>
+                    <h3>Prompt 输入规范</h3>
+                    <ul>
+                        <li>使用英文书写提示词更稳定。</li>
+                        <li><strong>避免</strong>在提示词末尾添加多余的空格或换行符。</li>
+                        <li>目前 Prompt 长度限制为 <strong>32K tokens</strong>。</li>
+                    </ul>
+                    <h3>API 调用规范</h3>
+                    <ul>
+                        <li>需在请求中指定模型ID。</li>
+                        <li>合理设置 <code>max_tokens</code> 以防止输出截断。</li>
+                    </ul>
+                    <h3>JSON Output</h3>
+                    <ul>
+                        <li><code>system</code>/<code>user</code> prompt 必须包含 <strong>"json"</strong> 字样及样例。</li>
+                        <li>需设置 <code>response_format</code> 为 <code>{'type': 'json_object'}</code>。</li>
+                        <li>此功能需搭配 <code>deepseek-chat</code> (V3) 模型使用。</li>
+                    </ul>
+                    <p><strong>文件上传功能</strong>：目前仅在网页版支持，API 调用暂不开放此功能。</p>
+                </div>
+            </details>
+
+            <!-- 2. 结构化提示词框架 -->
+            <details class="accordion-group" id="section-frameworks">
+                <summary aria-expanded="false" role="button">
+                    🏗️ 结构化提示词框架 (Prompt Frameworks)
+                    <span class="accordion-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </span>
+                </summary>
+                <div class="accordion-content">
+                    <p>选对框架能让 DeepSeek 的输出质量实现质的飞跃。以下是推荐的框架：</p>
+                    <table>
+                        <thead>
+                            <tr><th>框架</th><th>适用场景</th><th>核心要素</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>RTF</strong></td>
+                                <td>简单场景</td>
+                                <td>Role（角色）- Task（任务）- Format（格式）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>TRACE</strong></td>
+                                <td>复杂项目</td>
+                                <td>Task（任务）- Request（需求）- Action（行动）- Context（上下文）- Example（示例）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CoT</strong></td>
+                                <td>深度推理</td>
+                                <td>加入"请一步步思考"来引导模型展示推理路径</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CO-STAR</strong></td>
+                                <td>内容创作</td>
+                                <td>Context（背景）- Objective（目标）- Style（风格）- Tone（语气）- Audience（受众）- Response（响应格式）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+
+            <!-- 3. Prompt 设计核心技巧 -->
+            <details class="accordion-group" id="section-techniques">
+                <summary aria-expanded="false" role="button">
+                    ✍️ Prompt 设计核心技巧
+                    <span class="accordion-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </span>
+                </summary>
+                <div class="accordion-content">
+                    <h3>1. 角色扮演 (Role Prompting)</h3>
+                    <p>用<em>"你是一个[资深Python工程师]..."</em> 开头，通过 <code>#expert:</code> 等标识符触发模型的专家知识。</p>
+                    <h3>2. 任务拆解与约束</h3>
+                    <p>将任务拆解为 <code>Step 1, Step 2, Step 3...</code>，并使用<strong>"禁止"、"必须"</strong>等强约束词限定范围。</p>
+                    <h3>3. 动态参数注入</h3>
+                    <p>在 Prompt 中使用 <code>{{variable}}</code> 语法（如 <code>{{user_name}}</code>）实现模板复用，避免重复编写。</p>
+                    <h3>4. Few-Shot 示例</h3>
+                    <p>指令后提供 <strong>2-3 个高质量示例</strong>，并用 <code>---</code> 等分隔符隔开，帮助模型理解意图。</p>
+                    <h3>5. 利用记忆锚点</h3>
+                    <p>在长对话开始植入特殊标记（如 <code>[ANCHOR:prompt_v3_core_directive_2026Q2]</code>），防止模型"遗忘"核心指令。</p>
+                </div>
+            </details>
+
+            <!-- 4. 关键参数调优 -->
+            <details class="accordion-group" id="section-parameters">
+                <summary aria-expanded="false" role="button">
+                    ⚙️ 关键参数调优
+                    <span class="accordion-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </span>
+                </summary>
+                <div class="accordion-content">
+                    <table>
+                        <thead>
+                            <tr><th>参数</th><th>说明</th><th>推荐值</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Temperature</strong></td>
+                                <td>控制随机性</td>
+                                <td>严谨任务（代码生成）<strong>0.1</strong>；创意任务（写诗）<strong>0.9</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Top-P</strong></td>
+                                <td>核采样，限制候选词范围</td>
+                                <td>建议不要与 Temperature 同时修改</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Max Tokens</strong></td>
+                                <td>限制输出的最大 Token 数</td>
+                                <td>防止过长或截断，根据任务设置</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Stop</strong></td>
+                                <td>设定停止词</td>
+                                <td>让模型在合适位置停止输出，实现精确控制</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+
+            <!-- 5. 自检清单 -->
+            <details class="accordion-group" id="section-checklist">
+                <summary aria-expanded="false" role="button">
+                    ✅ 自检清单
+                    <span class="accordion-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </span>
+                </summary>
+                <div class="accordion-content">
+                    <ol>
+                        <li><strong>角色</strong>：是否在开头明确定义了角色？</li>
+                        <li><strong>任务</strong>：是否给出了清晰、具体的指令？</li>
+                        <li><strong>格式</strong>：是否指定了明确的输出格式？</li>
+                        <li><strong>边界</strong>：是否用强约束词划定了"禁止"范围？</li>
+                        <li><strong>参数</strong>：针对任务类型，是否设置了合适的参数？</li>
+                        <li><strong>历史</strong>：在多轮对话中，是否引用了关键上文？</li>
+                    </ol>
+                    <p style="margin-top:12px;color:var(--color-ink-muted);font-size:14px;">遵循这些规范，可以更好地引导模型，使其输出更符合预期，减少调试成本。</p>
+                </div>
+            </details>
+
+        </div><!-- /accordion-section -->
+
+        <!-- ===== 自定义输入区域 ===== -->
+        <section class="custom-section" id="custom-area">
+            <h2>🛠️ 自定义 Prompt 构建器</h2>
+            <p class="section-desc">根据上述规范，在此自定义你的提示词模板。选择框架、填写内容，一键生成并复制。</p>
+
+            <div class="input-group">
+                <div class="input-row">
+                    <div>
+                        <label for="framework-select">选择框架</label>
+                        <select id="framework-select">
+                            <option value="rtf">RTF（角色-任务-格式）</option>
+                            <option value="trace">TRACE（任务-需求-行动-上下文-示例）</option>
+                            <option value="cot">CoT（思维链推理）</option>
+                            <option value="costar">CO-STAR（内容创作）</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="role-input">角色 (Role)</label>
+                        <input type="text" id="role-input" placeholder="例如：资深Python工程师">
+                    </div>
+                </div>
+                <div>
+                    <label for="task-input">任务描述 (Task)</label>
+                    <textarea id="task-input" placeholder="例如：编写一段数据处理脚本，要求包含错误处理和日志记录..."></textarea>
+                </div>
+                <div class="input-row">
+                    <div>
+                        <label for="format-input">输出格式 (Format)</label>
+                        <input type="text" id="format-input" placeholder="例如：Markdown 代码块，附注释说明">
+                    </div>
+                    <div>
+                        <label for="constraint-input">约束条件</label>
+                        <input type="text" id="constraint-input" placeholder="例如：禁止使用外部库，必须使用Python 3.10+">
+                    </div>
+                </div>
+                <div>
+                    <label for="example-input">示例 (Few-Shot / 可选)</label>
+                    <textarea id="example-input" placeholder="粘贴 1-3 个输入输出示例，用 --- 分隔..." style="min-height:80px;"></textarea>
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button class="btn-primary" onclick="generatePrompt()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    生成 Prompt
+                </button>
+                <button class="btn-secondary" onclick="copyPrompt()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    复制到剪贴板
+                </button>
+                <button class="btn-secondary" onclick="clearForm()">清空表单</button>
+            </div>
+
+            <!-- 输出预览 -->
+            <div class="output-preview" id="output-preview" aria-live="polite">
+                <div id="output-content"></div>
+                <div class="copy-hint" id="copy-hint"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ===== 页脚 ===== -->
+    <footer class="page-footer">
+        <p>DeepSeek Prompt 规范指南 · 基于官方文档与社区最佳实践整理 · 遵循最新规范持续更新</p>
+    </footer>
+
+    <!-- ===== JavaScript 交互逻辑 ===== -->
+    <script>
+        // ===== 手风琴：全部展开 / 全部折叠 =====
+        function expandAll() {
+            document.querySelectorAll('.accordion-group').forEach(d => d.setAttribute('open', ''));
+        }
+
+        function collapseAll() {
+            document.querySelectorAll('.accordion-group').forEach(d => d.removeAttribute('open'));
+        }
+
+        // 默认展开第一个面板
+        document.addEventListener('DOMContentLoaded', () => {
+            const firstAccordion = document.querySelector('.accordion-group');
+            if (firstAccordion) firstAccordion.setAttribute('open', '');
+        });
+
+        // ===== 自定义 Prompt 生成 =====
+        function generatePrompt() {
+            const framework = document.getElementById('framework-select').value;
+            const role = document.getElementById('role-input').value.trim();
+            const task = document.getElementById('task-input').value.trim();
+            const format = document.getElementById('format-input').value.trim();
+            const constraint = document.getElementById('constraint-input').value.trim();
+            const example = document.getElementById('example-input').value.trim();
+
+            if (!role && !task) {
+                alert('请至少填写"角色"或"任务描述"字段。');
+                return;
+            }
+
+            let prompt = '';
+
+            switch (framework) {
+                case 'rtf':
+                    prompt = buildRTF(role, task, format, constraint, example);
+                    break;
+                case 'trace':
+                    prompt = buildTRACE(role, task, format, constraint, example);
+                    break;
+                case 'cot':
+                    prompt = buildCoT(role, task, format, constraint, example);
+                    break;
+                case 'costar':
+                    prompt = buildCOSTAR(role, task, format, constraint, example);
+                    break;
+                default:
+                    prompt = buildRTF(role, task, format, constraint, example);
+            }
+
+            const outputContent = document.getElementById('output-content');
+            const outputPreview = document.getElementById('output-preview');
+            const copyHint = document.getElementById('copy-hint');
+
+            outputContent.textContent = prompt;
+            outputPreview.classList.add('visible');
+            copyHint.textContent = '';
+            outputPreview.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function buildRTF(role, task, format, constraint, example) {
+            let p = '';
+            if (role) p += `# Role\n你是一个${role}。\n\n`;
+            if (task) p += `# Task\n${task}\n\n`;
+            if (format) p += `# Format\n请按照以下格式输出：${format}\n\n`;
+            if (constraint) p += `# Constraints\n- ${constraint.replace(/\n/g, '\n- ')}\n\n`;
+            if (example) p += `# Examples\n${example}\n\n`;
+            return p.trim();
+        }
+
+        function buildTRACE(role, task, format, constraint, example) {
+            let p = '';
+            if (task) p += `# Task\n${task}\n\n`;
+            if (role) p += `# Request\n你是一个${role}，请按照以下要求执行任务。\n\n`;
+            p += `# Action\n请一步步分析并执行上述任务。\n\n`;
+            if (constraint) p += `# Context\n约束条件：${constraint}\n\n`;
+            if (format) p += `格式要求：${format}\n\n`;
+            if (example) p += `# Example\n${example}\n\n`;
+            return p.trim();
+        }
+
+        function buildCoT(role, task, format, constraint, example) {
+            let p = '';
+            if (role) p += `你是一个${role}。\n\n`;
+            if (task) p += `任务：${task}\n\n`;
+            p += `请一步步思考并展示你的推理过程，最后给出结论。\n\n`;
+            if (format) p += `输出格式：${format}\n\n`;
+            if (constraint) p += `约束：${constraint}\n\n`;
+            if (example) p += `示例：\n${example}\n\n`;
+            return p.trim();
+        }
+
+        function buildCOSTAR(role, task, format, constraint, example) {
+            let p = '';
+            if (role) p += `# Context (背景)\n你是一个${role}。\n\n`;
+            if (task) p += `# Objective (目标)\n${task}\n\n`;
+            if (format) p += `# Style & Tone (风格与语气)\n${format}\n\n`;
+            p += `# Audience (受众)\n请根据任务需求面向合适的受众输出内容。\n\n`;
+            if (constraint) p += `# Response (响应要求)\n${constraint}\n\n`;
+            if (example) p += `# Example (示例)\n${example}\n\n`;
+            return p.trim();
+        }
+
+        // ===== 复制到剪贴板 =====
+        function copyPrompt() {
+            const outputContent = document.getElementById('output-content');
+            const copyHint = document.getElementById('copy-hint');
+            const text = outputContent.textContent;
+
+            if (!text.trim()) {
+                alert('请先生成 Prompt。');
+                return;
+            }
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    copyHint.textContent = '✅ 已复制到剪贴板！';
+                    setTimeout(() => { copyHint.textContent = ''; }, 2500);
+                }).catch(() => {
+                    fallbackCopy(text);
+                });
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.left = '-9999px';
+            textarea.style.top = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                const copyHint = document.getElementById('copy-hint');
+                copyHint.textContent = '✅ 已复制到剪贴板！';
+                setTimeout(() => { copyHint.textContent = ''; }, 2500);
+            } catch (err) {
+                alert('复制失败，请手动复制文本框内容。');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // ===== 清空表单 =====
+        function clearForm() {
+            document.getElementById('role-input').value = '';
+            document.getElementById('task-input').value = '';
+            document.getElementById('format-input').value = '';
+            document.getElementById('constraint-input').value = '';
+            document.getElementById('example-input').value = '';
+            document.getElementById('framework-select').value = 'rtf';
+            const outputPreview = document.getElementById('output-preview');
+            outputPreview.classList.remove('visible');
+            document.getElementById('output-content').textContent = '';
+            document.getElementById('copy-hint').textContent = '';
+        }
+
+        // ===== 键盘导航支持 =====
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + Enter 生成 Prompt
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                generatePrompt();
+            }
+            // Escape 关闭所有折叠面板
+            if (e.key === 'Escape' && document.activeElement === document.body) {
+                collapseAll();
+            }
+        });
+
+        // ===== details 打开/关闭时更新 aria-expanded =====
+        document.querySelectorAll('.accordion-group').forEach(details => {
+            const summary = details.querySelector('summary');
+            details.addEventListener('toggle', function() {
+                summary.setAttribute('aria-expanded', details.open ? 'true' : 'false');
+            });
+            // 初始状态
+            summary.setAttribute('aria-expanded', details.open ? 'true' : 'false');
+        });
+    </script>
+
+</body>
+</html>
