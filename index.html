@@ -3,102 +3,344 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AI Prompt</title>
-  <meta name="description" content="AI Prompt 文档与提示词整理" />
+  <title>AI Prompt Generator</title>
+  <meta name="description" content="选择 ChatGPT、Gemini 或 DeepSeek，生成适配不同 AI 的提示词。" />
   <style>
     :root {
       color-scheme: light dark;
       --bg: #f6f7fb;
-      --card: #ffffff;
-      --text: #172033;
+      --card: rgba(255,255,255,.86);
+      --text: #111827;
       --muted: #667085;
       --border: #e4e7ec;
       --accent: #2563eb;
+      --accent-soft: rgba(37,99,235,.12);
+      --shadow: 0 24px 80px rgba(15, 23, 42, .12);
+      --input: #ffffff;
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #0b1020;
-        --card: #121a2f;
+        --bg: #070b16;
+        --card: rgba(18,26,47,.88);
         --text: #eef2ff;
         --muted: #a7b0c4;
-        --border: #24304a;
+        --border: #25314d;
         --accent: #60a5fa;
+        --accent-soft: rgba(96,165,250,.14);
+        --shadow: 0 24px 80px rgba(0,0,0,.32);
+        --input: #0d1426;
       }
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top left, rgba(37, 99, 235, .14), transparent 32rem), var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 32rem),
+        radial-gradient(circle at bottom right, rgba(14,165,233,.14), transparent 28rem),
+        var(--bg);
       color: var(--text);
-      display: grid;
-      place-items: center;
-      padding: 24px;
+      padding: 28px;
     }
-    main {
-      width: min(760px, 100%);
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: clamp(28px, 6vw, 56px);
-      box-shadow: 0 20px 60px rgba(15, 23, 42, .12);
+    .wrap { width: min(1120px, 100%); margin: 0 auto; }
+    header {
+      display: grid;
+      gap: 14px;
+      margin: 28px 0 26px;
     }
     .eyebrow {
       color: var(--accent);
-      font-weight: 700;
-      letter-spacing: .08em;
+      font-weight: 800;
+      letter-spacing: .12em;
       text-transform: uppercase;
       font-size: 13px;
-      margin-bottom: 14px;
     }
     h1 {
-      font-size: clamp(34px, 7vw, 64px);
-      line-height: 1.02;
-      margin: 0 0 18px;
+      font-size: clamp(36px, 7vw, 72px);
+      line-height: 1;
+      margin: 0;
+      letter-spacing: -.04em;
     }
-    p {
+    .lead {
+      max-width: 760px;
       color: var(--muted);
       font-size: 18px;
-      line-height: 1.7;
-      margin: 0 0 24px;
+      line-height: 1.75;
+      margin: 0;
     }
-    .links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 32px;
+    .app {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: start;
     }
-    a {
-      color: inherit;
-      text-decoration: none;
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: clamp(20px, 3vw, 30px);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
     }
-    .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+    .field { display: grid; gap: 9px; margin-bottom: 18px; }
+    label { font-weight: 750; font-size: 14px; }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: var(--input);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 13px 14px;
+      font: inherit;
+      outline: none;
+    }
+    textarea { min-height: 116px; resize: vertical; line-height: 1.6; }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+    .ai-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .ai-option input { position: absolute; opacity: 0; pointer-events: none; }
+    .ai-option span {
+      display: grid;
+      place-items: center;
+      min-height: 54px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      cursor: pointer;
+      font-weight: 800;
+      background: var(--input);
+    }
+    .ai-option input:checked + span {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    button, .link-button {
       border: 1px solid var(--border);
       border-radius: 999px;
       padding: 12px 18px;
-      font-weight: 650;
+      font-weight: 800;
+      cursor: pointer;
+      background: var(--input);
+      color: var(--text);
+      text-decoration: none;
+      font: inherit;
     }
     .primary {
       background: var(--accent);
-      color: white;
+      color: #fff;
       border-color: var(--accent);
+    }
+    .output-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .output-head h2 { margin: 0; font-size: 22px; }
+    .badge {
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-weight: 800;
+      font-size: 12px;
+    }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 520px;
+      margin: 0;
+      border: 1px solid var(--border);
+      background: var(--input);
+      border-radius: 20px;
+      padding: 18px;
+      line-height: 1.65;
+      color: var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 14px;
+    }
+    .hint { color: var(--muted); font-size: 13px; line-height: 1.6; margin: 12px 0 0; }
+    footer { color: var(--muted); font-size: 14px; margin: 22px 0 10px; }
+    footer a { color: inherit; }
+    @media (max-width: 880px) {
+      body { padding: 18px; }
+      .app { grid-template-columns: 1fr; }
+      .ai-grid { grid-template-columns: 1fr; }
+      pre { min-height: 360px; }
     }
   </style>
 </head>
 <body>
-  <main>
-    <div class="eyebrow">AI Prompt</div>
-    <h1>AI 提示词与文档整理</h1>
-    <p>这个站点用于整理、展示和复用 AI Prompt。后续可以继续把提示词、阅读流程、自动化模板和使用说明放到这里。</p>
-    <p>当前版本是为 Vercel 部署准备的最小静态页面。</p>
-    <div class="links">
-      <a class="button primary" href="https://github.com/Aslce/AI-prompt">查看 GitHub 仓库</a>
-      <a class="button" href="https://github.com/Aslce/AI-prompt/blob/main/README.md">查看 README</a>
-    </div>
-  </main>
+  <div class="wrap">
+    <header>
+      <div class="eyebrow">AI Prompt Generator</div>
+      <h1>选择 AI，生成更合适的提示词</h1>
+      <p class="lead">把 ChatGPT、Gemini、DeepSeek 三个提示词页面合并为一个单页工具。输入任务、材料和输出要求后，选择目标 AI，即可生成适配该模型风格的提示词。</p>
+    </header>
+
+    <section class="app">
+      <form class="card" id="promptForm">
+        <label class="field">选择使用的 AI</label>
+        <div class="ai-grid" role="radiogroup" aria-label="选择 AI">
+          <label class="ai-option"><input type="radio" name="ai" value="ChatGPT" checked><span>ChatGPT</span></label>
+          <label class="ai-option"><input type="radio" name="ai" value="Gemini"><span>Gemini</span></label>
+          <label class="ai-option"><input type="radio" name="ai" value="DeepSeek"><span>DeepSeek</span></label>
+        </div>
+
+        <div class="field">
+          <label for="role">AI 角色</label>
+          <input id="role" placeholder="例如：阅读决策助手、提示词工程师、研究助理" value="专业的 AI 提示词生成助手" />
+        </div>
+
+        <div class="field">
+          <label for="task">你要完成的任务</label>
+          <textarea id="task" placeholder="例如：帮我阅读一本书，提炼核心问题、章节价值和行动建议。"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="context">背景材料 / 输入内容</label>
+          <textarea id="context" placeholder="粘贴书籍内容、网页内容、项目说明或你的需求背景。"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="output">期望输出</label>
+          <textarea id="output" placeholder="例如：用 Markdown 输出；包含总结、判断、优先级、下一步行动；语言简洁。">请使用 Markdown 输出，结构清晰，先给结论，再给理由，最后给可执行建议。</textarea>
+        </div>
+
+        <div class="field">
+          <label for="style">输出风格</label>
+          <select id="style">
+            <option>清晰、直接、可执行</option>
+            <option>详细、系统、适合深度分析</option>
+            <option>简洁、适合快速决策</option>
+            <option>教学式、一步一步解释</option>
+            <option>专业报告风格</option>
+          </select>
+        </div>
+
+        <div class="actions">
+          <button class="primary" type="submit">生成提示词</button>
+          <button type="button" id="clearBtn">清空</button>
+        </div>
+        <p class="hint">提示：如果你要上传书籍或长文档，可以在生成后的提示词中把“背景材料”替换为“我上传的文件”。</p>
+      </form>
+
+      <section class="card">
+        <div class="output-head">
+          <h2>生成结果</h2>
+          <span class="badge" id="aiBadge">ChatGPT</span>
+        </div>
+        <pre id="result">填写左侧内容后，点击“生成提示词”。</pre>
+        <div class="actions">
+          <button class="primary" type="button" id="copyBtn">复制提示词</button>
+          <button type="button" id="downloadBtn">下载 .txt</button>
+        </div>
+        <p class="hint" id="copyStatus"></p>
+      </section>
+    </section>
+
+    <footer>
+      <a href="https://github.com/Aslce/AI-prompt">GitHub 仓库</a>
+    </footer>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const form = $('promptForm');
+    const result = $('result');
+    const aiBadge = $('aiBadge');
+    const copyStatus = $('copyStatus');
+
+    function getSelectedAI() {
+      return document.querySelector('input[name="ai"]:checked').value;
+    }
+
+    function trimOrPlaceholder(value, placeholder) {
+      return value.trim() || placeholder;
+    }
+
+    function buildPrompt(ai, data) {
+      const task = trimOrPlaceholder(data.task, '请根据我提供的内容完成分析任务。');
+      const context = trimOrPlaceholder(data.context, '【在这里粘贴材料，或上传文件后说明：请基于我上传的文件分析。】');
+      const output = trimOrPlaceholder(data.output, '请给出结构化、可执行的输出。');
+      const role = trimOrPlaceholder(data.role, '专业助手');
+
+      const common = `# 角色\n你是${role}。\n\n# 任务\n${task}\n\n# 背景材料\n${context}\n\n# 输出要求\n${output}\n\n# 风格\n${data.style}\n`;
+
+      if (ai === 'ChatGPT') {
+        return `${common}\n# 工作方式\n1. 先判断我的真实需求，不要只复述材料。\n2. 把复杂问题拆成清晰步骤。\n3. 优先给结论，再给依据。\n4. 如果信息不足，请明确说明缺口，并给出最合理的假设。\n5. 输出要适合我直接复制使用。`;
+      }
+
+      if (ai === 'Gemini') {
+        return `${common}\n# Gemini 适配要求\n请充分利用长上下文能力：\n1. 先通读全部材料，识别主题、层级、冲突和遗漏。\n2. 对不同来源或不同段落的信息进行对照。\n3. 给出分层结果：核心结论、详细分析、证据依据、可执行建议。\n4. 避免泛泛而谈，每个结论都尽量对应材料中的具体信息。`;
+      }
+
+      return `${common}\n# DeepSeek 适配要求\n请强化推理和结构化输出：\n1. 先抽象出问题本质。\n2. 再分步骤推理，说明每一步为什么成立。\n3. 区分事实、推断和建议。\n4. 对可能的反例或不确定性做简短说明。\n5. 最后给出可执行清单。`;
+    }
+
+    function collectData() {
+      return {
+        role: $('role').value,
+        task: $('task').value,
+        context: $('context').value,
+        output: $('output').value,
+        style: $('style').value
+      };
+    }
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const ai = getSelectedAI();
+      aiBadge.textContent = ai;
+      result.textContent = buildPrompt(ai, collectData());
+      copyStatus.textContent = '';
+    });
+
+    document.querySelectorAll('input[name="ai"]').forEach((input) => {
+      input.addEventListener('change', () => {
+        aiBadge.textContent = getSelectedAI();
+      });
+    });
+
+    $('copyBtn').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(result.textContent);
+        copyStatus.textContent = '已复制到剪贴板。';
+      } catch (error) {
+        copyStatus.textContent = '复制失败，请手动选择文本复制。';
+      }
+    });
+
+    $('downloadBtn').addEventListener('click', () => {
+      const blob = new Blob([result.textContent], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${getSelectedAI()}-prompt.txt`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    $('clearBtn').addEventListener('click', () => {
+      $('task').value = '';
+      $('context').value = '';
+      $('output').value = '请使用 Markdown 输出，结构清晰，先给结论，再给理由，最后给可执行建议。';
+      $('style').selectedIndex = 0;
+      result.textContent = '填写左侧内容后，点击“生成提示词”。';
+      copyStatus.textContent = '';
+    });
+  </script>
 </body>
 </html>
